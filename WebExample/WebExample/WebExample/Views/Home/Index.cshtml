@@ -1,0 +1,247 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container-fluid">
+    <div class="page-header">
+        <h3>查詢賽事列表</h3>
+    </div>
+    <div class="row">
+        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+            <span class="label label-default" style="font-size:115%;line-height:2;">輸入日期</span>
+        </div>
+        <div class="col-xs-10" style="padding-left:2px;">
+            <div class="input-group">
+                <div class='input-group date' id='datetimepicker1'>
+                    <input type="Date" class="form-control" id="InputDate" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+            <button type="button" class="btn btn-primary" id="btnMatchesSelect">查詢賽事資料</button>
+        </div>
+        <div class="col-xs-10" style="padding-left:2px;">
+            <button type="button" class="btn" id="btnMatchesClear">清除</button>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-xs-12">
+            <table class="table table-striped" id="MatchesList">
+                <thead>
+                    <tr>
+                        <th>MatchID</th>
+                        <th>主隊</th>
+                        <th>客隊</th>
+                        <th>開賽時間</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @*<tr>
+                        <td>13590020</td>
+                        <td>美國洛杉磯</td>
+                        <td>台灣台北</td>
+                        <td>2018-05-25 18:00:00</td>
+                    </tr>
+                    <tr>
+                        <td>13590077</td>
+                        <td>南非綜合隊</td>
+                        <td>阿根廷</td>
+                        <td>2018-05-25 18:40:00</td>
+                    </tr>
+                    <tr>
+                        <td>13590657</td>
+                        <td>新疆猛獸隊</td>
+                        <td>亞馬遜火龍隊</td>
+                        <td>2018-05-25 18:50:00</td>
+                    </tr>*@
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <br />
+    <div class="page-header">
+        <h3>重播賽事(自選)</h3>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+            <span class="label label-default" style="font-size:115%;line-height:2;">執行時間(分)</span>
+        </div>
+        <div class="col-xs-10" style="padding-left:2px;">
+            <div class="input-group">
+                <input type="text" class="form-control" maxlength="3" id="CustomMatchesTime" />
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+            <span class="label label-default" style="font-size:115%;line-height:2;width:500px;">輸入MatchID</span>
+        </div>
+        <div class="col-xs-10" style="padding-left:2px;">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="範例:1300121,1400121" id="CustomInputMatchesID" />
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+            <button type="button" class="btn btn-primary" id="btnCustomMatches">執行</button>
+        </div>
+        <div class="col-xs-10" style="padding-left:2px;">
+        </div>
+    </div>
+    <br />
+    <div class="page-header">
+        <h3>重播賽事(隨機)</h3>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+            <span class="label label-default" style="font-size:115%;line-height:2;">執行時間(分)</span>
+        </div>
+        <div class="col-xs-10" style="padding-left:2px;">
+            <div class="input-group">
+                <input type="text" class="form-control" maxlength="3" id="RandomMatchesTime" />
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+            <span class="label label-default" style="font-size:115%;line-height:2;">輸入重播場數</span>
+        </div>
+        <div class="col-xs-10" style="padding-left:2px;">
+            <div class="input-group">
+                <input type="text" class="form-control" id="RandomMatchesCnt" />
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+            <button type="button" class="btn btn-primary" id="btnRandomMatches">執行</button>
+        </div>
+        <div class="col-xs-10" style="padding-left:2px;">
+        </div>
+    </div>
+    <br />
+    <div class="page-header">
+        <h3>賽事重播列表</h3>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-xs-12">
+            <table class="table table-striped" id="MatchesPlayList">
+                <thead>
+                    <tr>
+                        <th>MatchID</th>
+                        <th>主隊</th>
+                        <th>客隊</th>
+                        <th>執行時間</th>
+                        <th>強制關閉</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>13670010</td>
+                        <td>巴西</td>
+                        <td>英格蘭</td>
+                        <td>05:00</td>
+                        <td>
+                            <div>
+                                <button type="button" class="btn btn-danger">關閉</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>13670011</td>
+                        <td>法國</td>
+                        <td>德國</td>
+                        <td>29:00</td>
+                        <td>
+                            <div>
+                                <button type="button" class="btn btn-danger">關閉</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>13670081</td>
+                        <td>台灣</td>
+                        <td>哥斯大黎加</td>
+                        <td>60:00</td>
+                        <td>
+                            <div>
+                                <button type="button" class="btn btn-danger">關閉</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <br />
+</div>
+<script>
+    //init
+    if (g_month < 10)
+        g_month = padLeft(g_month, 2);
+    if (g_day < 10)
+        g_day = padLeft(g_day, 2);
+
+    $('#InputDate').val(g_year + '-' + g_month + '-' + g_day);
+
+    //查詢賽事列表
+    $('#btnMatchesSelect').on('click', function () {
+        $(".loading-mask").show();
+        var data = {
+            matchDate: $('#datetimepicker1').val()
+        }
+        var ajaxRequest = $.ajax({
+            type: "POST",
+            url: "@Url.Action("MatchListGet", new { controller = "Home"})",
+            dataType: "json",
+            data: data,
+        success: function (data) {
+            if (data.Success) {
+                var cnt = data.ResultData.length;
+                if (cnt > 0) {
+                    var tbody = '';
+                    for (var i = 0; i < cnt; i++) {
+                        tbody += '<tr>';
+                        tbody += '<td>' + data.ResultData[i]["MatchID"] + '</td>';
+                        tbody += '<td>' + data.ResultData[i]["Team1Zh"] + '</td>';
+                        tbody += '<td>' + data.ResultData[i]["Team2Zh"] + '</td>';
+                        tbody += '<td>' + data.ResultData[i]["MatchDate"] + '</td>';
+                        tbody += '</tr>';
+                    }
+                    $("#MatchesList").find('tbody').html(tbody);
+                    $("#MatchesList").show();
+                }
+                else {
+                    alert('查無資料');
+                }
+            }
+            else {
+                alert(data.ResultData);
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+           
+        },
+        complete: function () {
+            $(".loading-mask").hide();
+        }
+    })
+    })
+
+    $('#btnMatchesClear').on('click', function () {
+        $("#MatchesList").find('tbody').html('');
+        $("#MatchesList").hide();
+    })
+
+</script>
