@@ -1,2 +1,6 @@
-/GameConsole/GameConsole/obj
-/GameConsole/GameConsole/bin
+/WebExample/WebExample/.vs
+/WebExample/WebExample/packages
+/WebExample/WebExample/WebExample/App_Data
+/WebExample/WebExample/WebExample/bin
+/WebExample/WebExample/WebExample/logs
+/WebExample/WebExample/WebExample/obj
