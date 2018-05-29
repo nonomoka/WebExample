@@ -1,17 +1,19 @@
-﻿@{
+﻿@using WebExample.Models.Replay;
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
+    List<ReplayMatchList> MatchList = ViewBag.MatchList;
 }
 <div class="container-fluid">
     <div class="page-header">
         <h3>查詢賽事列表</h3>
     </div>
-    <div class="row">
+    @*<div class="row">
         <div class="col-xs-2" style="padding-right:2px;text-align:right;">
             <span class="label label-default" style="font-size:115%;line-height:2;">輸入日期</span>
         </div>
         <div class="col-xs-10" style="padding-left:2px;">
             <div class="input-group">
-                <div class='input-group date' id='datetimepicker1'>
+                <div class='input-group date'>
                     <input type="Date" class="form-control" id="InputDate" />
                 </div>
             </div>
@@ -20,12 +22,15 @@
     <br />
     <div class="row">
         <div class="col-xs-2" style="padding-right:2px;text-align:right;">
-            <button type="button" class="btn btn-primary" id="btnMatchesSelect">查詢賽事資料</button>
+            <button type="button" class="btn btn-primary" id="btnMatchesSelect">
+                <span class="glyphicon glyphicon-search"></span>
+                查詢賽事資料
+            </button>
         </div>
         <div class="col-xs-10" style="padding-left:2px;">
             <button type="button" class="btn" id="btnMatchesClear">清除</button>
         </div>
-    </div>
+    </div>*@
     <br />
     <div class="row">
         <div class="col-xs-12">
@@ -33,30 +38,25 @@
                 <thead>
                     <tr>
                         <th>MatchID</th>
+                        <th>聯賽</th>
                         <th>主隊</th>
                         <th>客隊</th>
+                        <th>比分</th>
                         <th>開賽時間</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @*<tr>
-                        <td>13590020</td>
-                        <td>美國洛杉磯</td>
-                        <td>台灣台北</td>
-                        <td>2018-05-25 18:00:00</td>
-                    </tr>
-                    <tr>
-                        <td>13590077</td>
-                        <td>南非綜合隊</td>
-                        <td>阿根廷</td>
-                        <td>2018-05-25 18:40:00</td>
-                    </tr>
-                    <tr>
-                        <td>13590657</td>
-                        <td>新疆猛獸隊</td>
-                        <td>亞馬遜火龍隊</td>
-                        <td>2018-05-25 18:50:00</td>
-                    </tr>*@
+                    @for (int i = 0; i < MatchList.Count(); i++)
+                    {
+                        <tr>
+                            <td>@MatchList[i].MatchID</td>
+                            <td>@MatchList[i].TournamentZH</td>
+                            <td>@MatchList[i].Team1ZH</td>
+                            <td>@MatchList[i].Team2ZH</td>
+                            <td>@MatchList[i].MatchScore</td>
+                            <td>@MatchList[i].MatchDate</td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
@@ -132,6 +132,10 @@
     <br />
     <div class="page-header">
         <h3>賽事重播列表</h3>
+        <button type="button" class="btn btn-info" id="btnRefreshPlayList">
+            <span class="glyphicon glyphicon-refresh"></span>
+            刷新
+        </button>
     </div>
     <br />
     <div class="row">
@@ -140,46 +144,46 @@
                 <thead>
                     <tr>
                         <th>MatchID</th>
+                        <th>聯賽</th>
                         <th>主隊</th>
                         <th>客隊</th>
-                        <th>執行時間</th>
-                        <th>強制關閉</th>
+                        @*<th>強制關閉</th>*@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>13670010</td>
-                        <td>巴西</td>
-                        <td>英格蘭</td>
-                        <td>05:00</td>
-                        <td>
-                            <div>
-                                <button type="button" class="btn btn-danger">關閉</button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>13670011</td>
-                        <td>法國</td>
-                        <td>德國</td>
-                        <td>29:00</td>
-                        <td>
-                            <div>
-                                <button type="button" class="btn btn-danger">關閉</button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>13670081</td>
-                        <td>台灣</td>
-                        <td>哥斯大黎加</td>
-                        <td>60:00</td>
-                        <td>
-                            <div>
-                                <button type="button" class="btn btn-danger">關閉</button>
-                            </div>
-                        </td>
-                    </tr>
+                    @*<tr>
+                            <td>13670010</td>
+                            <td>巴西</td>
+                            <td>英格蘭</td>
+                            <td>05:00</td>
+                            <td>
+                                <div>
+                                    <button type="button" class="btn btn-danger">關閉</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>13670011</td>
+                            <td>法國</td>
+                            <td>德國</td>
+                            <td>29:00</td>
+                            <td>
+                                <div>
+                                    <button type="button" class="btn btn-danger">關閉</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>13670081</td>
+                            <td>台灣</td>
+                            <td>哥斯大黎加</td>
+                            <td>60:00</td>
+                            <td>
+                                <div>
+                                    <button type="button" class="btn btn-danger">關閉</button>
+                                </div>
+                            </td>
+                        </tr>*@
                 </tbody>
             </table>
         </div>
@@ -188,60 +192,211 @@
 </div>
 <script>
     //init
-    if (g_month < 10)
-        g_month = padLeft(g_month, 2);
-    if (g_day < 10)
-        g_day = padLeft(g_day, 2);
+    //if (g_month < 10)
+    //    g_month = padLeft(g_month, 2);
+    //if (g_day < 10)
+    //    g_day = padLeft(g_day, 2);
 
-    $('#InputDate').val(g_year + '-' + g_month + '-' + g_day);
+    //$('#InputDate').val(g_year + '-' + g_month + '-' + g_day);
 
+    
     //查詢賽事列表
-    $('#btnMatchesSelect').on('click', function () {
+    @*$('#btnMatchesSelect').on('click', function () {
         $(".loading-mask").show();
         var data = {
-            matchDate: $('#datetimepicker1').val()
+            matchDate: $('#InputDate').val()
         }
         var ajaxRequest = $.ajax({
             type: "POST",
             url: "@Url.Action("MatchListGet", new { controller = "Home"})",
             dataType: "json",
             data: data,
-        success: function (data) {
-            if (data.Success) {
-                var cnt = data.ResultData.length;
-                if (cnt > 0) {
-                    var tbody = '';
-                    for (var i = 0; i < cnt; i++) {
-                        tbody += '<tr>';
-                        tbody += '<td>' + data.ResultData[i]["MatchID"] + '</td>';
-                        tbody += '<td>' + data.ResultData[i]["Team1Zh"] + '</td>';
-                        tbody += '<td>' + data.ResultData[i]["Team2Zh"] + '</td>';
-                        tbody += '<td>' + data.ResultData[i]["MatchDate"] + '</td>';
-                        tbody += '</tr>';
+            success: function (data) {
+                if (data.Success) {
+                    var cnt = data.ResultData.length;
+                    if (cnt > 0) {
+                        var tbody = '';
+                        for (var i = 0; i < cnt; i++) {
+                            tbody += '<tr>';
+                            tbody += '<td>' + data.ResultData[i].MatchID + '</td>';
+                            tbody += '<td>' + data.ResultData[i].TournamentZH + '</td>';
+                            tbody += '<td>' + data.ResultData[i].Team1ZH + '</td>';
+                            tbody += '<td>' + data.ResultData[i].Team2ZH + '</td>';
+                            tbody += '<td>' + data.ResultData[i].MatchScore + '</td>';
+                            tbody += '<td>' + data.ResultData[i].MatchDate + '</td>';
+                            tbody += '</tr>';
+                        }
+                        $("#MatchesList").find('tbody').html(tbody);
+                        $("#MatchesList").show();
                     }
-                    $("#MatchesList").find('tbody').html(tbody);
-                    $("#MatchesList").show();
+                    else {
+                        alert('查無資料');
+                        $("#MatchesList").find('tbody').html('');
+                        $("#MatchesList").hide();
+                    }
                 }
                 else {
-                    alert('查無資料');
+                    alert(data.ResultData);
                 }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+
+            },
+            complete: function () {
+                $(".loading-mask").hide();
             }
-            else {
-                alert(data.ResultData);
-            }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-           
-        },
-        complete: function () {
-            $(".loading-mask").hide();
-        }
-    })
+        })
     })
 
+    //清除賽事列表
     $('#btnMatchesClear').on('click', function () {
         $("#MatchesList").find('tbody').html('');
         $("#MatchesList").hide();
+    })*@
+
+    //執行重播(Custom)
+    $('#btnCustomMatches').on('click', function () {
+          $(".loading-mask").show();
+        var data = {
+            customTime: $('#CustomMatchesTime').val(),
+            matchIdList: $('#CustomInputMatchesID').val()
+        }
+        var ajaxRequest = $.ajax({
+            type: "POST",
+            url: "@Url.Action("CustomRun", new { controller = "Home"})",
+            dataType: "json",
+            data: data,
+            success: function (data) {
+                if (data.Success) {
+                    var cnt = data.ResultData.length;
+                    if (cnt > 0) {
+                        var tbody = '';
+                        for (var i = 0; i < cnt; i++) {
+                            tbody += '<tr>';
+                            tbody += '<td>' + data.ResultData[i].MatchID + '</td>';
+                            tbody += '<td>' + data.ResultData[i].TournamentZH + '</td>';
+                            tbody += '<td>' + data.ResultData[i].Team1ZH + '</td>';
+                            tbody += '<td>' + data.ResultData[i].Team2ZH + '</td>';
+                            tbody += '</tr>';
+                        }
+                        $("#MatchesPlayList").find('tbody').html(tbody);
+                        $("#MatchesPlayList").show();
+                    }
+                    else {
+                        $("#MatchesPlayList").find('tbody').html('');
+                        $("#MatchesPlayList").hide();
+                    }
+                }
+                else {
+                    $("#MatchesPlayList").find('tbody').html('');
+                    $("#MatchesPlayList").hide();
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+
+            },
+            complete: function () {
+                $(".loading-mask").hide();
+            }
+        })
     })
+
+    //執行重播(random)
+    $('#btnRandomMatches').on('click', function () {
+          $(".loading-mask").show();
+        var data = {
+            randomTime: $('#RandomMatchesTime').val(),
+            randomCnt: $('#RandomMatchesCnt').val()
+        }
+        var ajaxRequest = $.ajax({
+            type: "POST",
+            url: "@Url.Action("RadomRun", new { controller = "Home"})",
+            dataType: "json",
+            data: data,
+            success: function (data) {
+                if (data.Success) {
+                    var cnt = data.ResultData.length;
+                    if (cnt > 0) {
+                        var tbody = '';
+                        for (var i = 0; i < cnt; i++) {
+                            tbody += '<tr>';
+                            tbody += '<td>' + data.ResultData[i].MatchID + '</td>';
+                            tbody += '<td>' + data.ResultData[i].TournamentZH + '</td>';
+                            tbody += '<td>' + data.ResultData[i].Team1ZH + '</td>';
+                            tbody += '<td>' + data.ResultData[i].Team2ZH + '</td>';
+                            tbody += '</tr>';
+                        }
+                        $("#MatchesPlayList").find('tbody').html(tbody);
+                        $("#MatchesPlayList").show();
+                    }
+                    else {
+                        $("#MatchesPlayList").find('tbody').html('');
+                        $("#MatchesPlayList").hide();
+                    }
+                }
+                else {
+                    $("#MatchesPlayList").find('tbody').html('');
+                    $("#MatchesPlayList").hide();
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+
+            },
+            complete: function () {
+                $(".loading-mask").hide();
+            }
+        })
+    })
+
+     //刷新
+    $('#btnRefreshPlayList').on('click', function () {
+        $(".loading-mask").show();
+        getEList();
+    })
+
+
+    function getEList()
+    {
+        var data = {}
+         var ajaxRequest = $.ajax({
+            type: "POST",
+            url: "@Url.Action("RefreshExecuteList", new { controller = "Home"})",
+            dataType: "json",
+            data: data,
+            success: function (data) {
+                if (data.Success) {
+                    var cnt = data.ResultData.length;
+                    if (cnt > 0) {
+                        var tbody = '';
+                        for (var i = 0; i < cnt; i++) {
+                            tbody += '<tr>';
+                            tbody += '<td>' + data.ResultData[i].MatchID + '</td>';
+                            tbody += '<td>' + data.ResultData[i].TournamentZH + '</td>';
+                            tbody += '<td>' + data.ResultData[i].Team1ZH + '</td>';
+                            tbody += '<td>' + data.ResultData[i].Team2ZH + '</td>';
+                            //tbody += '<td><div>' + '<button type="button" class="btn btn-danger">關閉</button>' + '</div></td>';
+                            tbody += '</tr>';
+                        }
+                        $("#MatchesPlayList").find('tbody').html(tbody);
+                        $("#MatchesPlayList").show();
+                    }
+                    else {
+                        $("#MatchesPlayList").find('tbody').html(tbody);
+                        $("#MatchesPlayList").show();
+                    }
+                }
+                else {
+                    $("#MatchesPlayList").find('tbody').html(tbody);
+                    $("#MatchesPlayList").show();
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+
+            },
+            complete: function () {
+                $(".loading-mask").hide();
+            }
+        })
+    }
 
 </script>

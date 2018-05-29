@@ -25,9 +25,9 @@
     <style>
         .loading-mask div {
             display: block;
-            position: absolute;
+            position: fixed;
             width: 100%;
-            height: 100%;
+            height: 100vh;
             z-index: 10;
             background-color: antiquewhite;
             opacity: 0.5;
@@ -35,7 +35,7 @@
 
         .loading-mask img {
             display: block;
-            position: absolute;
+            position: fixed;
             z-index: 11;
             top: 40%;
             left: 45%;
@@ -43,6 +43,10 @@
     </style>
 </head>
 <body>
+    <div class="loading-mask" style="display:none;">
+        <div id="loading"></div>
+        <img src="~/Image/Load/animal.gif" />
+    </div>
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
@@ -54,17 +58,11 @@
                 @Html.ActionLink("開發工具", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
             </div>
             <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                </ul>
+                <ul class="nav navbar-nav"></ul>
             </div>
         </div>
     </div>
-
     <div class="container body-content">
-        <div class="loading-mask" style="display:none;">
-            <div id="loading"></div>
-            <img src="~/Image/Load/animal.gif" />
-        </div>
         @RenderBody()
         <hr />
         <footer>

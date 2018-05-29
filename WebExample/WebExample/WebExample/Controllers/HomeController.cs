@@ -1,19 +1,31 @@
-﻿using Newtonsoft.Json;
+﻿using jIAnSoft.Framework.Nami.TaskScheduler;
+using Newtonsoft.Json;
+using NLog;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Web;
+using System.Threading;
 using System.Web.Mvc;
+using WebExample.Models.Data;
+using WebExample.Models.Entity;
+using WebExample.Models.Replay;
 using WebExample.Models.Resp;
+using WebExample.Util;
 
 namespace WebExample.Controllers
 {
     public class HomeController : Controller
     {
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+        public static readonly AppConfig AppConfig = new AppConfig();
+        
+
         // GET: Home
         public ActionResult Index()
         {
+            MqWapper.Instance().Start();
+            var matches = InitMatchList();
+            ViewBag.MatchList = DataSave.MatchListEnableGet(matches);
             return View();
         }
 
@@ -28,33 +40,91 @@ namespace WebExample.Controllers
             ResponesJson jsonResp = new ResponesJson();
             try
             {
-                DataTable dt = new DataTable();
-                dt.Columns.Add("MatchID");
-                dt.Columns.Add("Team1Zh");
-                dt.Columns.Add("Team2Zh");
-                dt.Columns.Add("MatchDate");
-
-                DataRow dr1 = dt.NewRow();
-                dr1["MatchID"] = "13590020";
-                dr1["Team1Zh"] = "美國洛杉磯";
-                dr1["Team2Zh"] = "台灣台北";
-                dr1["MatchDate"] = "2018-05-25 18:00:00";
-                DataRow dr2 = dt.NewRow();
-                dr2["MatchID"] = "13590077";
-                dr2["Team1Zh"] = "南非綜合隊";
-                dr2["Team2Zh"] = "阿根廷";
-                dr2["MatchDate"] = "2018-05-25 18:40:00";
-                DataRow dr3 = dt.NewRow();
-                dr3["MatchID"] = "13590657";
-                dr3["Team1Zh"] = "新疆猛獸隊";
-                dr3["Team2Zh"] = "亞馬遜火龍隊";
-                dr3["MatchDate"] = "2018-05-25 18:50:00";
-                dt.Rows.Add(dr1);
-                dt.Rows.Add(dr2);
-                dt.Rows.Add(dr3);
-
-                jsonResp.ResultData = dt;
+                if (matchDate.Length != 10)
+                {
+                    jsonResp.Success = false;
+                    jsonResp.ResultData = $"日期格式不對(yyyy-MM-dd) => {matchDate}";
+                }
+                var matchList = DataSave.MatchListGet(matchDate);
                 jsonResp.Success = true;
+                jsonResp.ResultData = matchList;
+            }
+            catch (Exception ex)
+            {
+                jsonResp.ResultData = ex.Message;
+                jsonResp.Success = false;
+            }
+            return Content(JsonConvert.SerializeObject(jsonResp));
+            
+        }
+
+        public ActionResult CustomRun(int customTime,string matchIdList)
+        {
+            ResponesJson jsonResp = new ResponesJson();
+            try
+            {
+                var matches = InitMatchList();
+
+                //指定賽事資料
+                string[] matchArray = matchIdList.Split(',');
+                List<long> checklist = new List<long>();
+                foreach (var id in matchArray)
+                {
+                    checklist.Add(long.Parse(id));
+                }
+
+                //checklist.Add(13854605);
+                //checklist.Add(13649001);
+
+                List<long> mlist = new List<long>();
+
+                foreach (var matchid in checklist)
+                {
+                    if (matches.Contains(matchid))
+                        mlist.Add(matchid);
+                }
+
+                if (mlist.Count == 0)
+                {
+                    Log.Info($"無賽事走地與賠率資料");
+                    jsonResp.Success = false;
+                    jsonResp.ResultData = "無賽事走地與賠率資料";
+                    return Content(JsonConvert.SerializeObject(jsonResp));
+                }
+
+                foreach (var matchid in mlist)
+                {
+                    if (!CacheTool.ThreadExist(matchid))
+                    {
+                        Thread worker = new Thread(RunTask);
+                        JobParam jParam = new JobParam();
+                        jParam.MatchID = matchid;
+                        jParam.Time = customTime;
+                        worker.Start(jParam);
+                        CacheTool.AddThread(matchid, worker);
+                    }
+                }
+
+                System.Threading.Thread.Sleep(1000);
+                jsonResp.Success = true;
+                jsonResp.ResultData = RefreshList();
+            }
+            catch (Exception ex)
+            {
+                jsonResp.ResultData = ex.Message;
+                jsonResp.Success = false;
+            }
+            return Content(JsonConvert.SerializeObject(jsonResp));
+
+        }
+
+        public ActionResult RefreshExecuteList()
+        {
+            ResponesJson jsonResp = new ResponesJson();
+            try
+            {
+                jsonResp.Success = true;
+                jsonResp.ResultData = RefreshList();
             }
             catch (Exception ex)
             {
@@ -64,5 +134,109 @@ namespace WebExample.Controllers
             return Content(JsonConvert.SerializeObject(jsonResp));
         }
 
+        private static void RunTask(object param)
+        {
+            var jobParam = (JobParam)param;
+            Nami.Delay(1).Seconds().Do(() =>
+            {
+                Log.Info($"即將重播 {jobParam.MatchID} 場的賽事走地與賠率資料");
+                new Match(jobParam.MatchID, jobParam.Time).Start();
+            });
+        }
+
+
+        public ActionResult RadomRun(int randomTime,int randomCnt)
+        {
+            ResponesJson jsonResp = new ResponesJson();
+            try
+            {
+                List<long> mlist = new List<long>();
+                var matches = InitMatchList();
+                Random rand = new Random(Guid.NewGuid().GetHashCode());
+                List<int> listLinq = new List<int>(Enumerable.Range(0, matches.Count()-1));
+                listLinq = listLinq.OrderBy(num => rand.Next()).ToList<int>();
+
+                for (int i = 0; i < randomCnt; i++)
+                {
+                    mlist.Add(matches[listLinq[i]]);
+                }
+
+                foreach (var matchid in mlist)
+                {
+                    if (!CacheTool.ThreadExist(matchid))
+                    {
+                        Thread worker = new Thread(RunTask);
+                        CacheTool.AddThread(matchid, worker);
+                        JobParam jParam = new JobParam();
+                        jParam.MatchID = matchid;
+                        jParam.Time = randomTime;
+                        worker.Start(jParam);
+                    }
+                }
+
+                System.Threading.Thread.Sleep(1000);
+                jsonResp.Success = true;
+                jsonResp.ResultData = RefreshList();
+            }
+            catch (Exception ex)
+            {
+                jsonResp.ResultData = ex.Message;
+                jsonResp.Success = false;
+            }
+            return Content(JsonConvert.SerializeObject(jsonResp));
+
+        }
+
+        private List<ExecuteMatchListGet> RefreshList()
+        {
+            var ThreadList = CacheTool.ThreadList;
+            List<ExecuteMatchListGet> eList = new List<ExecuteMatchListGet>();
+            foreach (var tid in ThreadList)
+            {
+                var data = DataSave.ExecuteMatchListGet(tid.Key);
+                if (data.Count > 0)
+                {
+                    eList.Add(data[0]);
+                }
+            }
+            return eList;
+        }
+
+        private List<long> InitMatchList()
+        {
+            //取有賠率與走地的賽事編號
+            var matches = new List<long>();
+            var matchStr = CacheService.GetInitMatchList();
+            if (!string.IsNullOrEmpty(matchStr))
+            {
+                matches = JsonConvert.DeserializeObject<List<long>>(matchStr);
+            }
+            else
+            {
+                var scoutMatchIds = DataSave.FetchLiveScout();
+                var oddsMatchIds = DataSave.FetchOdds();
+                foreach (var matchId in oddsMatchIds)
+                {
+                    foreach (var scoutMatchId in scoutMatchIds)
+                    {
+                        if (matchId > 0 && matchId == scoutMatchId && !matches.Contains(matchId))
+                        {
+                            matches.Add(matchId);
+                        }
+                    }
+                }
+                CacheService.SetInitMatchList(matches, false);
+            }
+            return matches;
+        }
+
+        private static void RunTaskTest(object param)
+        {
+            var jobParam = (int)param;
+            Nami.Delay(jobParam).Seconds().Do(() =>
+            {
+                Log.Info($"Test Thread");
+            });
+        }
     }
 }
