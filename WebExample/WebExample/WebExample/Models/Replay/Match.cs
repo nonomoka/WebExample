@@ -132,7 +132,7 @@ namespace WebExample.Models.Replay
                     Log.Info($"賽事編號:{MatchId} 賠率資料送完");
                     DataSave.SwitchOddsActive(MatchId);
                     DataSave.UpdateMatchStatus(MatchId, 100);
-                    Nami.Delay(5).Seconds().Do(() => { CacheTool.RemoveThread(MatchId); });
+                    CacheTool.RemoveThread(MatchId);
                     return;
                 }
 

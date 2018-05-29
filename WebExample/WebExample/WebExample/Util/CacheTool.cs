@@ -4,11 +4,13 @@ using System.Threading;
 using System.Runtime.Caching;
 using System;
 using Newtonsoft.Json;
+using NLog;
 
 namespace WebExample.Util
 {
     public class CacheTool
     {
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         public static Dictionary<long, Thread> ThreadList = new Dictionary<long, Thread>();
         public static void AddThread(long matchID, Thread thd)
         {
@@ -41,10 +43,13 @@ namespace WebExample.Util
         }
         public static void RemoveThread(long matchID)
         {
+            Log.Info($"賽事Process:{matchID} ,是否存在{ThreadList.ContainsKey(matchID)}");
             if (ThreadList.ContainsKey(matchID))
             {
                 ThreadList.Remove(matchID);
+                Log.Info($"賽事Process:{matchID} 移除");
             }
+
         }
 
         private static ObjectCache _cache = MemoryCache.Default;
