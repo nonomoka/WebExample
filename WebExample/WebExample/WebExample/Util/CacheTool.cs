@@ -101,6 +101,37 @@ namespace WebExample.Util
                 UpdateCallback = action
             });
         }
+
+        public static List<long> MatchList = new List<long>();
+        public static void MatchAdd(long matchID)
+        {
+            if (!MatchList.Contains(matchID))
+            {
+                MatchList.Add(matchID);
+            }
+        }
+       
+        public static bool MatchExist(long matchID)
+        {
+            if (MatchList.Contains(matchID))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public static void MatchRemove(long matchID)
+        {
+            Log.Info($"賽事Process:{matchID} ,是否存在{MatchList.Contains(matchID)}");
+            if (MatchList.Contains(matchID))
+            {
+                MatchList.Remove(matchID);
+                Log.Info($"賽事Process:{matchID} 移除");
+            }
+
+        }
     }
     public class CacheService
     {

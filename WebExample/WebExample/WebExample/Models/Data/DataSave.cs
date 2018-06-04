@@ -13,6 +13,40 @@ namespace WebExample.Models.Data
 {
     public static class DataSave
     {
+
+        public static int DoSettle(long matchID, int oddsPlayType)
+        {
+            try
+            {
+                var list = Brook.Load(DbName.DevMainDb).Execute(
+                    CommandType.StoredProcedure,
+                    "[dbo].[USP_Backend_ReSettle]",
+                    new DbParameter[]
+                    {
+                        new SqlParameter("@intMatchID", SqlDbType.BigInt)
+                        {
+                            Value = matchID
+                        },
+                        new SqlParameter("@intOddsPlayType", SqlDbType.Int)
+                        {
+                            Value = oddsPlayType
+                        },
+                        new SqlParameter("@strResult", SqlDbType.VarChar)
+                        {
+                            Size = 10,
+                            Direction = ParameterDirection.Output
+                        }
+
+                    });
+                return list;
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, $"{e.StackTrace} {e.Message}");
+            }
+
+            return 0;
+        }
         public static List<ReplayMatchList> MatchListGet(string matchDate)
         {
             var dt = Brook.Load(DbName.DevMainDb).Table(
@@ -33,6 +67,8 @@ namespace WebExample.Models.Data
         }
         public static List<ReplayMatchList> MatchListEnableGet(List<long> matches)
         {
+           
+
             string matchesID = "";
             foreach (var id in matches)
             {
@@ -41,13 +77,34 @@ namespace WebExample.Models.Data
             if (matchesID.Length > 0)
                 matchesID = matchesID.Substring(0, matchesID.Length - 1);
 
+            string sqlStr = "select aaa.MatchID,aaa.TournamentZH,aaa.Team1ZH,aaa.Team2ZH,aaa.MatchScore, ";
+            sqlStr += "Convert(Varchar(19), aaa.MatchDate, 120)MatchDate,Case when bbb.CNT > 1  Then '全場/半場' else '全場' End PlayType ";
+            sqlStr += "from dbo.TB_Matches (nolock) aaa ";
+            sqlStr += "left join ";
+            sqlStr += "( ";
+            sqlStr += "	select MatchID , count(0) CNT ";
+            sqlStr += "	from ( ";
+            sqlStr += "			select MatchID , OddsPlayType ";
+            sqlStr += "			from ( ";
+            sqlStr += "				select distinct a.MatchID, a.OddsID,b.OddsPlayType ";
+            sqlStr += "				from dbo.TB_Odds (nolock) a ";
+            sqlStr += "				join dbo.TB_OddsTypes (nolock) b ";
+            sqlStr += "				on a.OddsID = b.OddsID ";
+            sqlStr += "				where a.MatchID in ( " + matchesID + " ) ";
+            sqlStr += "				) aa ";
+            sqlStr += "				group by MatchID , OddsPlayType ";
+            sqlStr += "	) bb ";
+            sqlStr += "	group by MatchID ";
+            sqlStr += ") bbb ";
+            sqlStr += "on aaa.MatchID = bbb.MatchID ";
+            sqlStr += "where aaa.MatchID in ( " + matchesID + " ) ";
+            sqlStr += "Order by aaa.MatchDate asc; ";
+
+
             var dt = Brook.Load(DbName.DevMainDb).Table(
                 160,
                 CommandType.Text,
-                "select MatchID,TournamentZH,Team1ZH,Team2ZH,MatchScore,Convert(Varchar(19), MatchDate, 120)MatchDate "+
-                    "from dbo.TB_Matches (nolock) "+
-                    "where MatchID in ("+ matchesID + ") "+
-                    "Order by MatchDate asc; ",
+                sqlStr,
                 new DbParameter[] {
                    
                 });

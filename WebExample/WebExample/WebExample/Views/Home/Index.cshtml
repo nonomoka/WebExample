@@ -42,20 +42,22 @@
                         <th>主隊</th>
                         <th>客隊</th>
                         <th>比分</th>
+                        <th>玩法</th>
                         <th>開賽時間</th>
                     </tr>
                 </thead>
                 <tbody>
                     @for (int i = 0; i < MatchList.Count(); i++)
                     {
-                        <tr>
-                            <td>@MatchList[i].MatchID</td>
-                            <td>@MatchList[i].TournamentZH</td>
-                            <td>@MatchList[i].Team1ZH</td>
-                            <td>@MatchList[i].Team2ZH</td>
-                            <td>@MatchList[i].MatchScore</td>
-                            <td>@MatchList[i].MatchDate</td>
-                        </tr>
+                    <tr>
+                        <td>@MatchList[i].MatchID</td>
+                        <td>@MatchList[i].TournamentZH</td>
+                        <td>@MatchList[i].Team1ZH</td>
+                        <td>@MatchList[i].Team2ZH</td>
+                        <td>@MatchList[i].MatchScore</td>
+                        <td>@MatchList[i].PlayType</td>
+                        <td>@MatchList[i].MatchDate</td>
+                    </tr>
                     }
                 </tbody>
             </table>

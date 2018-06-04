@@ -21,6 +21,7 @@ namespace WebExample.Models.Replay
         public string Team1ZH { get; set; }
         public string Team2ZH { get; set; }
         public string MatchScore { get; set; }
+        public string PlayType { get; set; }
         public string MatchDate { get; set; }
     }
     public class ExecuteMatchListGet

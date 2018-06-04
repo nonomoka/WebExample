@@ -5,11 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using WebExample.Models.Data;
 using WebExample.Models.Entity;
 using WebExample.Models.Replay;
 using WebExample.Models.Resp;
+using WebExample.Models.ThreadModel;
 using WebExample.Util;
 
 namespace WebExample.Controllers
@@ -18,12 +20,11 @@ namespace WebExample.Controllers
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         public static readonly AppConfig AppConfig = new AppConfig();
-        
+        private object locker = new Object();
 
         // GET: Home
         public ActionResult Index()
         {
-            MqWapper.Instance().Start();
             var matches = InitMatchList();
             ViewBag.MatchList = DataSave.MatchListEnableGet(matches);
             return View();
@@ -55,10 +56,10 @@ namespace WebExample.Controllers
                 jsonResp.Success = false;
             }
             return Content(JsonConvert.SerializeObject(jsonResp));
-            
+
         }
 
-        public ActionResult CustomRun(int customTime,string matchIdList)
+        public ActionResult CustomRun(int customTime, string matchIdList)
         {
             ResponesJson jsonResp = new ResponesJson();
             try
@@ -78,6 +79,8 @@ namespace WebExample.Controllers
 
                 List<long> mlist = new List<long>();
 
+
+
                 foreach (var matchid in checklist)
                 {
                     if (matches.Contains(matchid))
@@ -91,21 +94,18 @@ namespace WebExample.Controllers
                     jsonResp.ResultData = "無賽事走地與賠率資料";
                     return Content(JsonConvert.SerializeObject(jsonResp));
                 }
-
-                foreach (var matchid in mlist)
+                Nami.Delay(1).Seconds().Do(() =>
                 {
-                    if (!CacheTool.ThreadExist(matchid))
+                    foreach (var matchid in mlist)
                     {
-                        Thread worker = new Thread(RunTask);
-                        JobParam jParam = new JobParam();
-                        jParam.MatchID = matchid;
-                        jParam.Time = customTime;
-                        worker.Start(jParam);
-                        CacheTool.AddThread(matchid, worker);
+                        if (!CacheTool.ThreadExist(matchid))
+                        {
+                            Log.Info($"即將重播 {matchid} 場的賽事走地與賠率資料");
+                            new Match(matchid, customTime).Start();
+                        }
                     }
-                }
+                });
 
-                System.Threading.Thread.Sleep(1000);
                 jsonResp.Success = true;
                 jsonResp.ResultData = RefreshList();
             }
@@ -134,18 +134,21 @@ namespace WebExample.Controllers
             return Content(JsonConvert.SerializeObject(jsonResp));
         }
 
-        private static void RunTask(object param)
+        private void RunTask(object param)
         {
-            var jobParam = (JobParam)param;
-            Nami.Delay(1).Seconds().Do(() =>
+            lock (locker)
             {
-                Log.Info($"即將重播 {jobParam.MatchID} 場的賽事走地與賠率資料");
-                new Match(jobParam.MatchID, jobParam.Time).Start();
-            });
+                var jobParam = (JobParam)param;
+                Nami.Delay(1).Seconds().Do(() =>
+                {
+                    Log.Info($"即將重播 {jobParam.MatchID} 場的賽事走地與賠率資料");
+                    new Match(jobParam.MatchID, jobParam.Time).Start();
+                });
+            }
         }
 
 
-        public ActionResult RadomRun(int randomTime,int randomCnt)
+        public ActionResult RadomRun(int randomTime, int randomCnt)
         {
             ResponesJson jsonResp = new ResponesJson();
             try
@@ -153,7 +156,7 @@ namespace WebExample.Controllers
                 List<long> mlist = new List<long>();
                 var matches = InitMatchList();
                 Random rand = new Random(Guid.NewGuid().GetHashCode());
-                List<int> listLinq = new List<int>(Enumerable.Range(0, matches.Count()-1));
+                List<int> listLinq = new List<int>(Enumerable.Range(0, matches.Count() - 1));
                 listLinq = listLinq.OrderBy(num => rand.Next()).ToList<int>();
 
                 for (int i = 0; i < randomCnt; i++)
@@ -161,20 +164,17 @@ namespace WebExample.Controllers
                     mlist.Add(matches[listLinq[i]]);
                 }
 
-                foreach (var matchid in mlist)
+                Nami.Delay(1).Seconds().Do(() =>
                 {
-                    if (!CacheTool.ThreadExist(matchid))
+                    foreach (var matchid in mlist)
                     {
-                        Thread worker = new Thread(RunTask);
-                        CacheTool.AddThread(matchid, worker);
-                        JobParam jParam = new JobParam();
-                        jParam.MatchID = matchid;
-                        jParam.Time = randomTime;
-                        worker.Start(jParam);
+                        if (!CacheTool.ThreadExist(matchid))
+                        {
+                            Log.Info($"即將重播 {matchid} 場的賽事走地與賠率資料");
+                            new Match(matchid, randomTime).Start();
+                        }
                     }
-                }
-
-                System.Threading.Thread.Sleep(1000);
+                });
                 jsonResp.Success = true;
                 jsonResp.ResultData = RefreshList();
             }
@@ -189,11 +189,23 @@ namespace WebExample.Controllers
 
         private List<ExecuteMatchListGet> RefreshList()
         {
-            var ThreadList = CacheTool.ThreadList;
+            //var ThreadList = CacheTool.ThreadList;
+            //List<ExecuteMatchListGet> eList = new List<ExecuteMatchListGet>();
+            //foreach (var tid in ThreadList)
+            //{
+            //    var data = DataSave.ExecuteMatchListGet(tid.Key);
+            //    if (data.Count > 0)
+            //    {
+            //        eList.Add(data[0]);
+            //    }
+            //}
+            //return eList;
+
+            var MatchList = CacheTool.MatchList;
             List<ExecuteMatchListGet> eList = new List<ExecuteMatchListGet>();
-            foreach (var tid in ThreadList)
+            foreach (var tid in MatchList)
             {
-                var data = DataSave.ExecuteMatchListGet(tid.Key);
+                var data = DataSave.ExecuteMatchListGet(tid);
                 if (data.Count > 0)
                 {
                     eList.Add(data[0]);
@@ -228,15 +240,6 @@ namespace WebExample.Controllers
                 CacheService.SetInitMatchList(matches, false);
             }
             return matches;
-        }
-
-        private static void RunTaskTest(object param)
-        {
-            var jobParam = (int)param;
-            Nami.Delay(jobParam).Seconds().Do(() =>
-            {
-                Log.Info($"Test Thread");
-            });
         }
     }
 }
