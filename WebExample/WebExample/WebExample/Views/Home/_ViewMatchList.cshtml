@@ -1,0 +1,16 @@
+﻿
+@using WebExample.Models.Replay;
+@{
+    List<ReplayMatchList> MatchList = ViewBag.MatchList;
+}
+
+@for (int i = 0; i < MatchList.Count(); i++)
+{
+    <tr>
+        <td>@MatchList[i].MatchID</td>
+        <td>@MatchList[i].TournamentZH</td>
+        <td>@MatchList[i].Team1ZH</td>
+        <td>@MatchList[i].Team2ZH</td>
+        <td>@MatchList[i].MatchDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+    </tr>
+}
