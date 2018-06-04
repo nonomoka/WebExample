@@ -187,6 +187,7 @@
     <Compile Include="Models\ThreadModel\ThreadWork.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\CacheTool.cs" />
+    <Compile Include="Util\EntityTool.cs" />
     <Compile Include="Util\MqWapper.cs" />
     <Compile Include="Util\RabbitMqHelper.cs" />
   </ItemGroup>

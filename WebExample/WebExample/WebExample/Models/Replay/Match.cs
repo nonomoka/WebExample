@@ -1,11 +1,9 @@
 ﻿using jIAnSoft.Framework.Nami.TaskScheduler;
 using Newtonsoft.Json;
 using NLog;
-
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Data;
 using WebExample.Models.Data;
 using WebExample.Models.Entity;
 using WebExample.Models.Entity.ActionCode;
@@ -15,9 +13,6 @@ namespace WebExample.Models.Replay
 {
     public class Match
     {
-        //private static Dictionary<long,int> maxTimeDiff = new Dictionary<long, int>();
-        //private int maxTimeDiff = 0;
-
         private int avgTimeForOdds = 0; //平均值行時間
         private int modTimeForOdds = 0;
         private int avgTimeForScout = 0;
@@ -28,21 +23,39 @@ namespace WebExample.Models.Replay
 
         public ScoutStruct[] Scout { get; set; }
         public OddsStruct[] Odds { get; set; }
-
+        public DataTable OddsDt { get; set; }
+        public DataTable OddsResultDt { get; set; }
         public Match()
         {
         }
 
+        //public Match(long matchId, int totaltime)
+        //{
+        //    Scout = DataSave.FetchLiveScout(matchId);
+        //    Odds = DataSave.FetchOdds(matchId);
+        //    MatchId = matchId;
+
+        //    var totalMiSec = totaltime * 60 * 1000;
+
+        //    modTimeForOdds = totalMiSec % Odds.Length;
+        //    avgTimeForOdds = totalMiSec / Odds.Length;
+
+        //    modTimeForScout = totalMiSec % Scout.Length;
+        //    avgTimeForScout = totalMiSec / Scout.Length;
+        //}
+
         public Match(long matchId, int totaltime)
         {
             Scout = DataSave.FetchLiveScout(matchId);
-            Odds = DataSave.FetchOdds(matchId);
+            OddsDt = DataSave.FetchOddsByBetradar(matchId);
             MatchId = matchId;
 
             var totalMiSec = totaltime * 60 * 1000;
 
-            modTimeForOdds = totalMiSec % Odds.Length;
-            avgTimeForOdds = totalMiSec / Odds.Length;
+            //modTimeForOdds = totalMiSec % Odds.Length;
+            //avgTimeForOdds = totalMiSec / Odds.Length;
+            modTimeForOdds = totalMiSec % OddsDt.Rows.Count;
+            avgTimeForOdds = totalMiSec / OddsDt.Rows.Count;
 
             modTimeForScout = totalMiSec % Scout.Length;
             avgTimeForScout = totalMiSec / Scout.Length;
@@ -66,16 +79,28 @@ namespace WebExample.Models.Replay
                 Log.Info($"賽事編號:{MatchId} 沒有走地資料");
             }
 
-            if (Odds.Length > 0)
+            if (OddsDt.Rows.Count > 0)
             {
                 Log.Info($"賽事編號:{MatchId} 開始傳送賠率資料");
-                PushOddstToSportServer(0);
+                PushScoutToMq(0);
             }
             else
             {
-                Log.Info($"賽事編號:{MatchId} 沒有賠率資料");
+                Log.Info($"賽事編號:{MatchId} 沒有走地資料");
             }
+
+            //if (Odds.Length > 0)
+            //{
+            //    Log.Info($"賽事編號:{MatchId} 開始傳送賠率資料");
+            //    PushOddstToSportServer(0);
+            //}
+            //else
+            //{
+            //    Log.Info($"賽事編號:{MatchId} 沒有賠率資料");
+            //}
         }
+
+        #region 原有的Function
 
         private void PushScoutToMq(int index)
         {
@@ -204,5 +229,55 @@ namespace WebExample.Models.Replay
                 Log.Error(ex, $"{ex.StackTrace} {ex.Message}");
             }
         }
+        #endregion
+
+        #region new Odds Function
+        private void PushOddsToIntegration(int index)
+        {
+            try
+            {
+                if (index + 1 > OddsDt.Rows.Count)
+                {
+                    Log.Info($"賽事編號:{MatchId},第{index + 1}次賠率資料送完");
+                    CacheTool.MatchRemove(MatchId);
+                    return;
+                }
+               
+                var lodData = OddsDt.Rows[index]["JsonData"].ToString();
+
+                ToMq("odds", "odds.replaylive", EntityTool.Serialize(lodData));
+                Log.Info($"賽事編號:{MatchId},第{index + 1}次發送賠率資料:{lodData}");
+
+                int timer = 0;
+                if (index <= Odds.Length - 1)
+                    timer = avgTimeForOdds;
+                else
+                    timer = modTimeForOdds;
+
+                Nami.Delay(timer).Do(() =>
+                {
+                    PushOddstToSportServer(index + 1);
+                });
+            }
+            catch (Exception ex)
+            {
+                var lodData = JsonConvert.SerializeObject(Odds[index]);
+                Log.Info($"賽事編號:{MatchId},第{index + 1}次失敗，失敗原因:{ex.Message}，失敗原因:{ex.StackTrace}");
+            }
+
+        }
+
+        private static void ToMq(string key, string routingKey, byte[] msg)
+        {
+            try
+            {
+                MqWapper.Instance().Topic(key, routingKey, msg);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, $"{ex.StackTrace} {ex.Message}");
+            }
+        }
+        #endregion
     }
 }

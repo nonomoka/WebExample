@@ -325,6 +325,20 @@ namespace WebExample.Models.Data
                 });
             return list.ToArray();
         }
+        public static DataTable FetchOddsByBetradar(long matchid)
+        {
+            var dt = Brook.Load(DbName.BetaBetradar).Table(160,
+                CommandType.Text,
+                @"select JsonData,MsgNr from Betradar.dbo.LiveOddsData (nolock) where MatchID = @MatchId and CodeEvent = 'OddsChange' and Msgnr > 0 order by MsgNr asc",
+                new DbParameter[] {
+                    new SqlParameter("@MatchId", SqlDbType.BigInt)
+                    {
+                        Value = matchid
+                    },
+                });
+
+            return dt;
+        }
 
         public static int InsertAccount(string account)
         {
