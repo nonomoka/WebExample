@@ -29,37 +29,37 @@ namespace WebExample.Models.Replay
         {
         }
 
-        //public Match(long matchId, int totaltime)
-        //{
-        //    Scout = DataSave.FetchLiveScout(matchId);
-        //    Odds = DataSave.FetchOdds(matchId);
-        //    MatchId = matchId;
-
-        //    var totalMiSec = totaltime * 60 * 1000;
-
-        //    modTimeForOdds = totalMiSec % Odds.Length;
-        //    avgTimeForOdds = totalMiSec / Odds.Length;
-
-        //    modTimeForScout = totalMiSec % Scout.Length;
-        //    avgTimeForScout = totalMiSec / Scout.Length;
-        //}
-
         public Match(long matchId, int totaltime)
         {
             Scout = DataSave.FetchLiveScout(matchId);
-            OddsDt = DataSave.FetchOddsByBetradar(matchId);
+            Odds = DataSave.FetchOdds(matchId);
             MatchId = matchId;
 
             var totalMiSec = totaltime * 60 * 1000;
 
-            //modTimeForOdds = totalMiSec % Odds.Length;
-            //avgTimeForOdds = totalMiSec / Odds.Length;
-            modTimeForOdds = totalMiSec % OddsDt.Rows.Count;
-            avgTimeForOdds = totalMiSec / OddsDt.Rows.Count;
+            modTimeForOdds = totalMiSec % Odds.Length;
+            avgTimeForOdds = totalMiSec / Odds.Length;
 
             modTimeForScout = totalMiSec % Scout.Length;
             avgTimeForScout = totalMiSec / Scout.Length;
         }
+
+        //public Match(long matchId, int totaltime)
+        //{
+        //    Scout = DataSave.FetchLiveScout(matchId);
+        //    OddsDt = DataSave.FetchOddsByBetradar(matchId);
+        //    MatchId = matchId;
+
+        //    var totalMiSec = totaltime * 60 * 1000;
+
+        //    //modTimeForOdds = totalMiSec % Odds.Length;
+        //    //avgTimeForOdds = totalMiSec / Odds.Length;
+        //    modTimeForOdds = totalMiSec % OddsDt.Rows.Count;
+        //    avgTimeForOdds = totalMiSec / OddsDt.Rows.Count;
+
+        //    modTimeForScout = totalMiSec % Scout.Length;
+        //    avgTimeForScout = totalMiSec / Scout.Length;
+        //}
 
         public void Start()
         {
@@ -79,25 +79,25 @@ namespace WebExample.Models.Replay
                 Log.Info($"賽事編號:{MatchId} 沒有走地資料");
             }
 
-            if (OddsDt.Rows.Count > 0)
-            {
-                Log.Info($"賽事編號:{MatchId} 開始傳送賠率資料");
-                PushScoutToMq(0);
-            }
-            else
-            {
-                Log.Info($"賽事編號:{MatchId} 沒有走地資料");
-            }
-
-            //if (Odds.Length > 0)
+            //if (OddsDt.Rows.Count > 0)
             //{
             //    Log.Info($"賽事編號:{MatchId} 開始傳送賠率資料");
             //    PushOddstToSportServer(0);
             //}
             //else
             //{
-            //    Log.Info($"賽事編號:{MatchId} 沒有賠率資料");
+            //    Log.Info($"賽事編號:{MatchId} 沒有走地資料");
             //}
+
+            if (Odds.Length > 0)
+            {
+                Log.Info($"賽事編號:{MatchId} 開始傳送賠率資料");
+                PushOddstToSportServer(0);
+            }
+            else
+            {
+                Log.Info($"賽事編號:{MatchId} 沒有賠率資料");
+            }
         }
 
         #region 原有的Function
