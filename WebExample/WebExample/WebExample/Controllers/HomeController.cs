@@ -98,10 +98,10 @@ namespace WebExample.Controllers
                 {
                     foreach (var matchid in mlist)
                     {
-                        if (!CacheTool.ThreadExist(matchid))
+                        if (!CacheTool.ThreadExist(matchid) && CacheTool.MatchList.Count < 5)
                         {
                             Log.Info($"即將重播 {matchid} 場的賽事走地與賠率資料");
-                            new Match(matchid, customTime).Start();
+                            new Match(matchid, customTime).RiskmanStart();
                         }
                     }
                 });
@@ -142,7 +142,7 @@ namespace WebExample.Controllers
                 Nami.Delay(1).Seconds().Do(() =>
                 {
                     Log.Info($"即將重播 {jobParam.MatchID} 場的賽事走地與賠率資料");
-                    new Match(jobParam.MatchID, jobParam.Time).Start();
+                    new Match(jobParam.MatchID, jobParam.Time).RiskmanStart();
                 });
             }
         }
@@ -168,10 +168,10 @@ namespace WebExample.Controllers
                 {
                     foreach (var matchid in mlist)
                     {
-                        if (!CacheTool.ThreadExist(matchid))
+                        if (!CacheTool.ThreadExist(matchid) && CacheTool.MatchList.Count < 5)
                         {
                             Log.Info($"即將重播 {matchid} 場的賽事走地與賠率資料");
-                            new Match(matchid, randomTime).Start();
+                            new Match(matchid, randomTime).RiskmanStart();
                         }
                     }
                 });

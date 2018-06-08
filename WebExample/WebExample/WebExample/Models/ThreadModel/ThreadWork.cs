@@ -20,7 +20,7 @@ namespace WebExample.Models.ThreadModel
             if (CacheTool.MatchList.Count <= 5)
             {
                 Log.Info($"即將重播 {jParam.MatchID} 場的賽事走地與賠率資料");
-                new Match(jParam.MatchID, jParam.Time).Start();
+                new Match(jParam.MatchID, jParam.Time).BetRadarStart();
                 CacheTool.MatchAdd(jParam.MatchID);
             }
         }

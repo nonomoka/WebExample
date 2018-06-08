@@ -8,11 +8,14 @@ using WebExample.Models.Data;
 using WebExample.Models.Entity;
 using WebExample.Models.Entity.ActionCode;
 using WebExample.Util;
+using System.Linq;
 
 namespace WebExample.Models.Replay
 {
     public class Match
     {
+        private int avgTimeForOddsRisk = 0; //平均值行時間
+        private int modTimeForOddsRisk = 0;
         private int avgTimeForOdds = 0; //平均值行時間
         private int modTimeForOdds = 0;
         private int avgTimeForScout = 0;
@@ -25,48 +28,151 @@ namespace WebExample.Models.Replay
         public OddsStruct[] Odds { get; set; }
         public DataTable OddsDt { get; set; }
         public DataTable OddsResultDt { get; set; }
+        public List<RiskData> RiskOddsDataList { get; set; }
         public Match()
         {
         }
 
         public Match(long matchId, int totaltime)
         {
+            //先結算上一場賽事的單
+            DataSave.DoSettle(matchId, 1);//全場
+            DataSave.DoSettle(matchId, 2);//半場
+            
+            RiskOddsDataList = new List<RiskData>();
             Scout = DataSave.FetchLiveScout(matchId);
             Odds = DataSave.FetchOdds(matchId);
+            long tempMsgnr = -1L;
+
+            #region 組批次檔
+            RiskData rData = new RiskData();
+            LiveMatchData lData = new LiveMatchData();
+            for (int i = 0; i < Odds.Length; i++)
+            {
+                var tmpOddsTypeId = long.Parse(string.IsNullOrEmpty(Odds[i].OddsTypeID) ? "0" : Odds[i].OddsTypeID);
+                var tmpSubtype = long.Parse(string.IsNullOrEmpty(Odds[i].Subtype) ? "0" : Odds[i].Subtype);
+                if (Odds[i].MsgNr == tempMsgnr)
+                {
+                    //RiskMan 如果有不同的 TypeId & SubType 要新增
+                    bool isNeedToInsert = true;
+                    foreach (var typeIdList in rData.OddsTypeIdList)
+                    {
+                        if (typeIdList.OddsTypeId == tmpOddsTypeId
+                         && typeIdList.SubType == tmpSubtype)
+                        {
+                            isNeedToInsert = false;
+                            break;
+                        }
+                    }
+
+                    if (isNeedToInsert)
+                    {
+                        rData.OddsTypeIdList.Add(
+                             new OddsTypeIdList()
+                             {
+                                 OddsTypeId = tmpOddsTypeId,
+                                 SubType = tmpSubtype
+                             }
+                        );
+                    }
+
+                    rData.OddsTypeIdList.Where(x => x.OddsTypeId == tmpOddsTypeId && x.SubType == tmpSubtype).First().OddsChangeList.Add(
+                    new OddsChangeList()
+                    {
+                        OddsId = Odds[i].OddsId,
+                        OddsIdOri = Odds[i].OddsIdOri.ToString(),
+                        Odds = Odds[i].Odds.ToString(),
+                        SpecialBetValue = Odds[i].SpecialBetValue,
+                        ForTheRest = Odds[i].ForTheRest,
+                        Score = Odds[i].Score,
+                        Status = 1,
+                        Timestamp = Odds[i].CreateTime
+                    });
+
+                    if (i == Odds.Length - 1)
+                    {
+                        RiskOddsDataList.Add(rData);
+                    }
+                }
+                else
+                {
+                    if (i != 0)
+                    {
+                        RiskOddsDataList.Add(rData);
+                        rData = new RiskData();
+                    }
+                    tempMsgnr = Odds[i].MsgNr;
+                    rData.MatchId = Odds[i].MatchId;
+                    rData.Msgnr = Odds[i].MsgNr;
+                    rData.Source = 1;
+                    rData.OddsKind = 2;
+                    //RiskMan 如果有不同的 TypeId & SubType 要新增
+                    bool isNeedToInsert = true;
+                    foreach (var typeIdList in rData.OddsTypeIdList)
+                    {
+                        if (typeIdList.OddsTypeId == tmpOddsTypeId
+                         && typeIdList.SubType == tmpSubtype)
+                        {
+                            isNeedToInsert = false;
+                            break;
+                        }
+                    }
+
+                    if (isNeedToInsert)
+                    {
+                        rData.OddsTypeIdList.Add(
+                             new OddsTypeIdList()
+                             {
+                                 OddsTypeId = tmpOddsTypeId,
+                                 SubType = tmpSubtype
+                             }
+                        );
+                    }
+
+                    rData.OddsTypeIdList.Where(x => x.OddsTypeId == tmpOddsTypeId && x.SubType == tmpSubtype).First().OddsChangeList.Add(
+                    new OddsChangeList()
+                    {
+                        OddsId = Odds[i].OddsId,
+                        OddsIdOri = Odds[i].OddsIdOri.ToString(),
+                        Odds = Odds[i].Odds.ToString(),
+                        SpecialBetValue = Odds[i].SpecialBetValue,
+                        ForTheRest = Odds[i].ForTheRest,
+                        Score = Odds[i].Score,
+                        Status = 1,
+                        Timestamp = Odds[i].CreateTime
+                    });
+                }
+            }
+
+            #endregion 
+           
             MatchId = matchId;
 
             var totalMiSec = totaltime * 60 * 1000;
+
+            modTimeForOddsRisk = totalMiSec % RiskOddsDataList.Count;
+            avgTimeForOddsRisk = totalMiSec / RiskOddsDataList.Count;
 
             modTimeForOdds = totalMiSec % Odds.Length;
             avgTimeForOdds = totalMiSec / Odds.Length;
 
             modTimeForScout = totalMiSec % Scout.Length;
             avgTimeForScout = totalMiSec / Scout.Length;
+
+
         }
 
-        //public Match(long matchId, int totaltime)
-        //{
-        //    Scout = DataSave.FetchLiveScout(matchId);
-        //    OddsDt = DataSave.FetchOddsByBetradar(matchId);
-        //    MatchId = matchId;
-
-        //    var totalMiSec = totaltime * 60 * 1000;
-
-        //    //modTimeForOdds = totalMiSec % Odds.Length;
-        //    //avgTimeForOdds = totalMiSec / Odds.Length;
-        //    modTimeForOdds = totalMiSec % OddsDt.Rows.Count;
-        //    avgTimeForOdds = totalMiSec / OddsDt.Rows.Count;
-
-        //    modTimeForScout = totalMiSec % Scout.Length;
-        //    avgTimeForScout = totalMiSec / Scout.Length;
-        //}
-
-        public void Start()
+        
+        /// <summary>
+        /// Riskman
+        /// </summary>
+        public void RiskmanStart()
         {
             CacheTool.MatchAdd(MatchId);
             DataSave.UpdateMatchReplayStatus(MatchId, 6);
             DataSave.UpdateMatcScore(MatchId, "0:0");
-            DataSave.UpdateOddsStatus(MatchId, 4);
+            DataSave.DeleteAndBackupOdds(MatchId);
+            //DataSave.UpdateOddsStatus(MatchId, 4);
 
 
             if (Scout.Length > 0)
@@ -79,15 +185,36 @@ namespace WebExample.Models.Replay
                 Log.Info($"賽事編號:{MatchId} 沒有走地資料");
             }
 
-            //if (OddsDt.Rows.Count > 0)
-            //{
-            //    Log.Info($"賽事編號:{MatchId} 開始傳送賠率資料");
-            //    PushOddstToSportServer(0);
-            //}
-            //else
-            //{
-            //    Log.Info($"賽事編號:{MatchId} 沒有走地資料");
-            //}
+            if (RiskOddsDataList.Count > 0)
+            {
+                Log.Info($"賽事編號:{MatchId} 開始傳送賠率資料");
+                PushOddsToRiskMan(0);
+            }
+            else
+            {
+                Log.Info($"賽事編號:{MatchId} 沒有賠率資料");
+            }
+        }
+        
+
+        public void BetRadarStart()
+        {
+            CacheTool.MatchAdd(MatchId);
+            DataSave.UpdateMatchReplayStatus(MatchId, 6);
+            DataSave.UpdateMatcScore(MatchId, "0:0");
+            //DataSave.DeleteAndBackupOdds(MatchId);
+            DataSave.UpdateOddsStatus(MatchId, 4);
+
+
+            if (Scout.Length > 0)
+            {
+                Log.Info($"賽事編號:{MatchId} 開始傳送走地資料");
+                PushScoutToMq(0);
+            }
+            else
+            {
+                Log.Info($"賽事編號:{MatchId} 沒有走地資料");
+            }
 
             if (Odds.Length > 0)
             {
@@ -109,7 +236,6 @@ namespace WebExample.Models.Replay
                 if (index + 1 > Scout.Length)
                 {
                     Log.Info($"賽事編號:{MatchId} 第{index + 1}次走地資料送完");
-                    //DataSave.UpdateMatchStatus(MatchId, 100);
                     return;
                 }
 
@@ -171,14 +297,7 @@ namespace WebExample.Models.Replay
                 {
                     Log.Info($"賽事編號:{MatchId},第{index + 1}次賠率資料送完");
                     DataSave.SwitchOddsActive(MatchId);
-                    //DataSave.UpdateMatchStatus(MatchId, 100);
-                    //CacheTool.RemoveThread(MatchId);
                     CacheTool.MatchRemove(MatchId);
-                    //Log.Info($"賽事編號:{MatchId} 開始結算");
-                    //DataSave.DoSettle(MatchId,1);
-                    //Log.Info($"賽事編號:{MatchId} 全場結算完成");
-                    //DataSave.DoSettle(MatchId,2);
-                    //Log.Info($"賽事編號:{MatchId} 半場結算完成");
                     return;
                 }
 
@@ -208,6 +327,44 @@ namespace WebExample.Models.Replay
                 Nami.Delay(timer).Do(() =>
                 {
                     PushOddstToSportServer(index + 1);
+                });
+            }
+            catch (Exception ex)
+            {
+                var lodData = JsonConvert.SerializeObject(Odds[index]);
+                Log.Info($"賽事編號:{MatchId},第{index + 1}次失敗，失敗原因:{ex.Message}，失敗原因:{ex.StackTrace}");
+            }
+
+        }
+
+        private void PushOddsToRiskMan(int index)
+        {
+            try
+            {
+                if (index + 1 > RiskOddsDataList.Count)
+                {
+                    Log.Info($"賽事編號:{MatchId},第{index + 1}次賠率資料送完");
+                    //賠率送完即結算
+                    DataSave.DoSettle(MatchId, 1);//全場
+                    DataSave.DoSettle(MatchId, 2);//半場
+                    //DataSave.SwitchOddsActive(MatchId);
+                    CacheTool.MatchRemove(MatchId);
+                    return;
+                }
+
+                SendRisk.DoOddsBatch(JsonConvert.SerializeObject(RiskOddsDataList[index]));
+
+                Log.Info($"賽事編號:{MatchId},第{index + 1}次賠率資料傳送,{JsonConvert.SerializeObject(RiskOddsDataList[index])}");
+
+                int timer = 0;
+                if (index <= RiskOddsDataList.Count - 1)
+                    timer = avgTimeForOddsRisk;
+                else
+                    timer = modTimeForOddsRisk;
+
+                Nami.Delay(timer).Do(() =>
+                {
+                    PushOddsToRiskMan(index + 1);
                 });
             }
             catch (Exception ex)

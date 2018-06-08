@@ -67,7 +67,7 @@ namespace WebExample.Models.Data
         }
         public static List<ReplayMatchList> MatchListEnableGet(List<long> matches)
         {
-           
+
 
             string matchesID = "";
             foreach (var id in matches)
@@ -106,7 +106,7 @@ namespace WebExample.Models.Data
                 CommandType.Text,
                 sqlStr,
                 new DbParameter[] {
-                   
+
                 });
 
             var returnData = JsonConvert.DeserializeObject<List<ReplayMatchList>>(JsonConvert.SerializeObject(dt));
@@ -315,7 +315,12 @@ namespace WebExample.Models.Data
         public static OddsStruct[] FetchOdds(long matchid)
         {
             var list = Brook.Load(DbName.DevMainDb).Query<OddsStruct>(
-                "SELECT [Tid],[MatchId],[MsgNr],[OddsID] AS [OddsId],[Odds],[SpecialBetValue],[OddsID_ori] AS [OddsIdOri],[Score],[ForTheRest],[CreateTime] FROM [MainDB].[dbo].[TB_Odds] WHERE [MatchId] = @MatchId AND MsgNr < 10000 order by [MsgNr],CreateTime asc;",
+                @"SELECT [Tid],[MatchId],[MsgNr],a.[OddsID] AS [OddsId],cast(b.OddsTypeID as varchar(20)) as OddsTypeID,
+                    cast(b.Subtype as varchar(20)) as Subtype,[Odds],[SpecialBetValue],[OddsID_ori] AS [OddsIdOri],[Score],[ForTheRest],[CreateTime] 
+                    FROM [MainDB].[dbo].[TB_Odds] (nolock) a
+                    left join [MainDB].[dbo].[TB_OddsTypes] (nolock) b 
+                    on a.OddsID = b.OddsID " +
+                    "WHERE [MatchId] = @MatchId AND MsgNr < 10000 order by [MsgNr],CreateTime asc;",
                 new DbParameter[]
                 {
                     new SqlParameter("@MatchId", SqlDbType.BigInt)
@@ -556,5 +561,35 @@ namespace WebExample.Models.Data
                     }
                 });
         }
+
+        #region 賠率備份與刪除
+        public static void DeleteAndBackupOdds(long matchId)
+        {
+            try
+            {
+                Brook.Load(DbName.DevMainDb).Execute(
+                CommandType.StoredProcedure,
+                "[dbo].[USP_Odds_Replay]",
+                new DbParameter[]
+                {
+                        new SqlParameter("@intMatchID", SqlDbType.BigInt)
+                        {
+                            Value = matchId
+                        },
+                        new SqlParameter("@strResult", SqlDbType.VarChar)
+                        {
+                            Size = 10,
+                            Direction = ParameterDirection.Output
+                        }
+
+                });
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, $"{e.StackTrace} {e.Message}");
+            }
+        }
+        #endregion 
+
     }
 }

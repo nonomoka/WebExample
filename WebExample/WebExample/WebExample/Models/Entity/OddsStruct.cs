@@ -19,7 +19,8 @@ namespace WebExample.Models.Entity
         /// 何種玩法的代碼 ex 單、雙 大小 等等
         /// </summary>
         public long OddsId { get; set; }
-
+        public string OddsTypeID { get; set; }
+        public string Subtype { get; set; }
         public long MsgNr { get; set; }
 
         /// <summary>
@@ -38,7 +39,6 @@ namespace WebExample.Models.Entity
         /// <summary>
         /// 賠率的種類
         /// </summary>
-        public int OddsTypeId { get; set; }
 
         public long OddsIdOri { get; set; }
         public string Score { get; set; }
