@@ -13,6 +13,7 @@ namespace WebExample.Util
     {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         private static string ServerSite = "http://192.168.4.52:8000";
+        
         /// <summary>
         /// 批次-發送賠率資料到 Riskman ,失敗十次記在Log
         /// </summary>
@@ -21,50 +22,32 @@ namespace WebExample.Util
             try
             {
                 var url = $"{ServerSite}/integration/batch-odd-change/";
-                using (HttpClient client = new HttpClient())
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.Method = "POST"; // 方法
+                request.KeepAlive = true; //是否保持連線
+                request.ContentType = "application/json; charset=utf-8";
+                var sb = new StringBuilder();
+                sb.Append($"{JsonData}");
+                var param = sb.ToString();
+                var bs = Encoding.UTF8.GetBytes(param);
+
+                Log.Debug($"SendOddsBatchToRiskMan => apiurl:{url}\n parame:{sb}\n");
+
+                using (var reqStream = request.GetRequestStream())
                 {
-                    HttpContent contentPost = new StringContent(JsonData, Encoding.UTF8, "application/json");
-                    HttpResponseMessage response = client.PostAsync(url, contentPost).Result;
+                    reqStream.Write(bs, 0, bs.Length);
                 }
 
-
-                //if (!(WebRequest.Create(url) is HttpWebRequest req))
-                //{
-                //    if (excuteTimes < 10)
-                //    {
-                //        Nami.Delay(1).Seconds().Do(() =>
-                //        {
-                //            DoOddsBatch(JsonData, excuteTimes++);
-                //        });
-                //    }
-                //}
-                //else
-                //{
-                //    request.Method = "POST"; // 方法
-                //    request.KeepAlive = true; //是否保持連線
-                //    request.ContentType = "application/json; charset=utf-8";
-                //    var sb = new StringBuilder();
-                //    sb.Append($"{JsonData}");
-                //    var param = sb.ToString();
-                //    var bs = Encoding.UTF8.GetBytes(param);
-
-                //    Log.Debug($"SendOddsBatchToRiskMan => apiurl:{url}\n parame:{sb}\n");
-
-                //    using (var reqStream = request.GetRequestStream())
-                //    {
-                //        reqStream.Write(bs, 0, bs.Length);
-                //    }
-
-                //    using (var response = (HttpWebResponse)request.GetResponse())
-                //    {
-                //        using (var sr = new StreamReader(response.GetResponseStream() ?? throw new InvalidOperationException()))
-                //        {
-                //            var result = sr.ReadToEnd();
-                //            sr.Close();
-                //            Log.Debug($"SendOddsBatchToRiskMan => apiurl:{url}\n parame:{sb}\n result:{(int)response.StatusCode}");
-                //        }
-                //    }
-                //}
+                using (var response = (HttpWebResponse)request.GetResponse())
+                {
+                    using (var sr = new StreamReader(response.GetResponseStream()))
+                    {
+                        var result = sr.ReadToEnd();
+                        sr.Close();
+                        Log.Debug($"SendOddsBatchToRiskMan => apiurl:{url}\n parame:{sb}\n result:{(int)response.StatusCode}");
+                    }
+                }
+                
             }
             catch (Exception ex)
             {
@@ -81,67 +64,52 @@ namespace WebExample.Util
                 Log.Error($"SendOddsBatchToRiskManData=>{JsonData}\n");
             }
         }
-
-        /*
-        public static void DoLiveMatchSend(string JsonData, int excuteTimes = 0)
+        public static void DoOddsBatch(string message, string JsonData, int excuteTimes = 0)
         {
             try
             {
-                var url = $"{ServerSite}/integration/live-match/";
+                var url = $"{ServerSite}/integration/batch-odd-change/";
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.Method = "POST"; // 方法
+                request.KeepAlive = true; //是否保持連線
+                request.ContentType = "application/json; charset=utf-8";
+                var sb = new StringBuilder();
+                sb.Append($"{JsonData}");
+                var param = sb.ToString();
+                var bs = Encoding.UTF8.GetBytes(param);
 
-                if (!(WebRequest.Create(url) is HttpWebRequest request))
+                Log.Debug($"SendOddsBatchToRiskMan => message:{message}\n apiurl:{url}\n parame:{sb}\n");
+
+                using (var reqStream = request.GetRequestStream())
                 {
-                    if (excuteTimes < 10)
+                    reqStream.Write(bs, 0, bs.Length);
+                }
+
+                using (var response = (HttpWebResponse)request.GetResponse())
+                {
+                    using (var sr = new StreamReader(response.GetResponseStream()))
                     {
-                        Nami.Delay(1).Seconds().Do(() =>
-                        {
-                            DoLiveMatchSend(JsonData, excuteTimes++);
-                        });
+                        var result = sr.ReadToEnd();
+                        sr.Close();
+                        Log.Debug($"SendOddsBatchToRiskMan => message:{message}\n apiurl:{url}\n parame:{sb}\n result:{(int)response.StatusCode}");
                     }
                 }
-                else
-                {
-                    request.Method = "POST"; // 方法
-                    request.KeepAlive = true; //是否保持連線
-                    request.ContentType = "application/json; charset=utf-8";
-                    var sb = new StringBuilder();
-                    sb.Append($"{JsonData}");
-                    var param = sb.ToString();
-                    var bs = Encoding.UTF8.GetBytes(param);
 
-                    Log.Debug($"SendLiveMatchToRiskMan => apiurl:{url}\n parame:{sb}\n");
-
-                    using (var reqStream = request.GetRequestStream())
-                    {
-                        reqStream.Write(bs, 0, bs.Length);
-                    }
-
-                    using (var response = (HttpWebResponse)request.GetResponse())
-                    {
-                        using (var sr = new StreamReader(response.GetResponseStream() ?? throw new InvalidOperationException()))
-                        {
-                            var result = sr.ReadToEnd();
-                            sr.Close();
-                            Log.Debug($"SendLiveMatchToRiskMan => apiurl:{url}\n parame:{sb}\n result:{(int)response.StatusCode}");
-                        }
-                    }
-                }
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"SendLiveMatchToRiskMan => {ex.StackTrace}\n{ex.Message}\n");
+                Log.Error(ex, $"SendOddsBatchToRiskMan => message:{message}\n {ex.StackTrace}\n{ex.Message}\n");
                 Nami.Delay(1).Seconds().Do(() =>
                 {
-                    DoLiveMatchSend(JsonData, excuteTimes++);
+                    DoOddsBatch(JsonData, excuteTimes++);
                 });
 
             }
 
             if (excuteTimes >= 10)
             {
-                Log.Error($"SendLiveMatchToRiskManData=>{JsonData}\n");
+                Log.Error($"SendOddsBatchToRiskManData=> message:{message}\n {JsonData}\n");
             }
         }
-        */
     }
 }

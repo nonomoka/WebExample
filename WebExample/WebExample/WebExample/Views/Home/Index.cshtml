@@ -3,34 +3,12 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
     List<ReplayMatchList> MatchList = ViewBag.MatchList;
 }
+
+
 <div class="container-fluid">
     <div class="page-header">
         <h3>查詢賽事列表</h3>
     </div>
-    @*<div class="row">
-        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
-            <span class="label label-default" style="font-size:115%;line-height:2;">輸入日期</span>
-        </div>
-        <div class="col-xs-10" style="padding-left:2px;">
-            <div class="input-group">
-                <div class='input-group date'>
-                    <input type="Date" class="form-control" id="InputDate" />
-                </div>
-            </div>
-        </div>
-    </div>
-    <br />
-    <div class="row">
-        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
-            <button type="button" class="btn btn-primary" id="btnMatchesSelect">
-                <span class="glyphicon glyphicon-search"></span>
-                查詢賽事資料
-            </button>
-        </div>
-        <div class="col-xs-10" style="padding-left:2px;">
-            <button type="button" class="btn" id="btnMatchesClear">清除</button>
-        </div>
-    </div>*@
     <br />
     <div class="row">
         <div class="col-xs-12">
@@ -49,86 +27,18 @@
                 <tbody>
                     @for (int i = 0; i < MatchList.Count(); i++)
                     {
-                    <tr>
-                        <td>@MatchList[i].MatchID</td>
-                        <td>@MatchList[i].TournamentZH</td>
-                        <td>@MatchList[i].Team1ZH</td>
-                        <td>@MatchList[i].Team2ZH</td>
-                        <td>@MatchList[i].MatchScore</td>
-                        <td>@MatchList[i].PlayType</td>
-                        <td>@MatchList[i].MatchDate</td>
-                    </tr>
+                        <tr>
+                            <td>@MatchList[i].MatchID</td>
+                            <td>@MatchList[i].TournamentZH</td>
+                            <td>@MatchList[i].Team1ZH</td>
+                            <td>@MatchList[i].Team2ZH</td>
+                            <td>@MatchList[i].MatchScore</td>
+                            <td>@MatchList[i].PlayType</td>
+                            <td>@MatchList[i].MatchDate</td>
+                        </tr>
                     }
                 </tbody>
             </table>
-        </div>
-    </div>
-    <br />
-    <div class="page-header">
-        <h3>重播賽事(自選)</h3>
-    </div>
-    <br />
-    <div class="row">
-        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
-            <span class="label label-default" style="font-size:115%;line-height:2;">執行時間(分)</span>
-        </div>
-        <div class="col-xs-10" style="padding-left:2px;">
-            <div class="input-group">
-                <input type="text" class="form-control" maxlength="3" id="CustomMatchesTime" />
-            </div>
-        </div>
-    </div>
-    <br />
-    <div class="row">
-        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
-            <span class="label label-default" style="font-size:115%;line-height:2;width:500px;">輸入MatchID</span>
-        </div>
-        <div class="col-xs-10" style="padding-left:2px;">
-            <div class="input-group">
-                <input type="text" class="form-control" placeholder="範例:1300121,1400121" id="CustomInputMatchesID" />
-            </div>
-        </div>
-    </div>
-    <br />
-    <div class="row">
-        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
-            <button type="button" class="btn btn-primary" id="btnCustomMatches">執行</button>
-        </div>
-        <div class="col-xs-10" style="padding-left:2px;">
-        </div>
-    </div>
-    <br />
-    <div class="page-header">
-        <h3>重播賽事(隨機)</h3>
-    </div>
-    <br />
-    <div class="row">
-        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
-            <span class="label label-default" style="font-size:115%;line-height:2;">執行時間(分)</span>
-        </div>
-        <div class="col-xs-10" style="padding-left:2px;">
-            <div class="input-group">
-                <input type="text" class="form-control" maxlength="3" id="RandomMatchesTime" />
-            </div>
-        </div>
-    </div>
-    <br />
-    <div class="row">
-        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
-            <span class="label label-default" style="font-size:115%;line-height:2;">輸入重播場數</span>
-        </div>
-        <div class="col-xs-10" style="padding-left:2px;">
-            <div class="input-group">
-                <input type="text" class="form-control" id="RandomMatchesCnt" />
-            </div>
-        </div>
-    </div>
-    <br />
-    <div class="row">
-        <div class="col-xs-2" style="padding-right:2px;text-align:right;">
-            <button type="button" class="btn btn-primary" id="btnRandomMatches">執行</button>
-        </div>
-        <div class="col-xs-10" style="padding-left:2px;">
         </div>
     </div>
     <br />
@@ -192,25 +102,131 @@
     </div>
     <br />
 </div>
-<script>
-    //init
-    //if (g_month < 10)
-    //    g_month = padLeft(g_month, 2);
-    //if (g_day < 10)
-    //    g_day = padLeft(g_day, 2);
 
-    //$('#InputDate').val(g_year + '-' + g_month + '-' + g_day);
+<ul id="myTab" class="nav nav-tabs" style="padding-top:20px">
+    <li class="active">
+        <a href="#Riskman" data-toggle="tab">
+            風控重播
+        </a>
+    </li>
+    <li><a href="#Frontend" data-toggle="tab">前端重播</a></li>
+</ul>
 
-    
-    //查詢賽事列表
-    @*$('#btnMatchesSelect').on('click', function () {
+<div id="myTabContent" class="tab-content">
+    <div class="tab-pane fade in active" id="Riskman">
+        <div class="container-fluid">
+            <div class="page-header">
+                <h3>重播賽事(自選)</h3>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+                    <span class="label label-default" style="font-size:115%;line-height:2;width:500px;">輸入MatchID</span>
+                </div>
+                <div class="col-xs-10" style="padding-left:2px;">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="範例:1300121,1400121" id="RiskCustomInputMatchesID" />
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+                    <button type="button" class="btn btn-primary" id="btnRiskCustomMatches">執行</button>
+                </div>
+                <div class="col-xs-10" style="padding-left:2px;">
+                </div>
+            </div>
+            <br />
+        </div>
+    </div>
+    <div class="tab-pane fade" id="Frontend">
+        <div class="container-fluid">
+            <div class="page-header">
+                <h3>重播賽事(自選)</h3>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+                    <span class="label label-default" style="font-size:115%;line-height:2;">執行時間(分)</span>
+                </div>
+                <div class="col-xs-10" style="padding-left:2px;">
+                    <div class="input-group">
+                        <input type="text" class="form-control" maxlength="3" id="CustomMatchesTime" />
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+                    <span class="label label-default" style="font-size:115%;line-height:2;width:500px;">輸入MatchID</span>
+                </div>
+                <div class="col-xs-10" style="padding-left:2px;">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="範例:1300121,1400121" id="CustomInputMatchesID" />
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+                    <button type="button" class="btn btn-primary" id="btnCustomMatches">執行</button>
+                </div>
+                <div class="col-xs-10" style="padding-left:2px;">
+                </div>
+            </div>
+            <br />
+            <div class="page-header">
+                <h3>重播賽事(隨機)</h3>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+                    <span class="label label-default" style="font-size:115%;line-height:2;">執行時間(分)</span>
+                </div>
+                <div class="col-xs-10" style="padding-left:2px;">
+                    <div class="input-group">
+                        <input type="text" class="form-control" maxlength="3" id="RandomMatchesTime" />
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+                    <span class="label label-default" style="font-size:115%;line-height:2;">輸入重播場數</span>
+                </div>
+                <div class="col-xs-10" style="padding-left:2px;">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="RandomMatchesCnt" />
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-xs-2" style="padding-right:2px;text-align:right;">
+                    <button type="button" class="btn btn-primary" id="btnRandomMatches">執行</button>
+                </div>
+                <div class="col-xs-10" style="padding-left:2px;">
+                </div>
+            </div>
+            <br />
+        </div>
+    </div>
+</div>
+
+<script id="common">
+    //刷新
+    $('#btnRefreshPlayList').on('click', function () {
         $(".loading-mask").show();
-        var data = {
-            matchDate: $('#InputDate').val()
-        }
+        getEList();
+    })
+
+
+    function getEList() {
+        var data = {}
         var ajaxRequest = $.ajax({
             type: "POST",
-            url: "@Url.Action("MatchListGet", new { controller = "Home"})",
+            url: "@Url.Action("RefreshExecuteList", new { controller = "Home"})",
             dataType: "json",
             data: data,
             success: function (data) {
@@ -224,21 +240,69 @@
                             tbody += '<td>' + data.ResultData[i].TournamentZH + '</td>';
                             tbody += '<td>' + data.ResultData[i].Team1ZH + '</td>';
                             tbody += '<td>' + data.ResultData[i].Team2ZH + '</td>';
-                            tbody += '<td>' + data.ResultData[i].MatchScore + '</td>';
-                            tbody += '<td>' + data.ResultData[i].MatchDate + '</td>';
+                            //tbody += '<td><div>' + '<button type="button" class="btn btn-danger">關閉</button>' + '</div></td>';
                             tbody += '</tr>';
                         }
-                        $("#MatchesList").find('tbody').html(tbody);
-                        $("#MatchesList").show();
+                        $("#MatchesPlayList").find('tbody').html(tbody);
+                        $("#MatchesPlayList").show();
                     }
                     else {
-                        alert('查無資料');
-                        $("#MatchesList").find('tbody').html('');
-                        $("#MatchesList").hide();
+                        $("#MatchesPlayList").find('tbody').html('');
+                        $("#MatchesPlayList").show();
                     }
                 }
                 else {
-                    alert(data.ResultData);
+                    $("#MatchesPlayList").find('tbody').html('');
+                    $("#MatchesPlayList").show();
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+
+            },
+            complete: function () {
+                $(".loading-mask").hide();
+            }
+        })
+    }
+
+</script>
+
+<script id="riskman">
+    //執行重播(Custom)
+    $('#btnRiskCustomMatches').on('click', function () {
+        $(".loading-mask").show();
+        var data = {
+            matchIdList: $('#RiskCustomInputMatchesID').val()
+        }
+        var ajaxRequest = $.ajax({
+            type: "POST",
+            url: "@Url.Action("RiskCustomRun", new { controller = "Home"})",
+            dataType: "json",
+            data: data,
+            success: function (data) {
+                if (data.Success) {
+                    var cnt = data.ResultData.length;
+                    if (cnt > 0) {
+                        var tbody = '';
+                        for (var i = 0; i < cnt; i++) {
+                            tbody += '<tr>';
+                            tbody += '<td>' + data.ResultData[i].MatchID + '</td>';
+                            tbody += '<td>' + data.ResultData[i].TournamentZH + '</td>';
+                            tbody += '<td>' + data.ResultData[i].Team1ZH + '</td>';
+                            tbody += '<td>' + data.ResultData[i].Team2ZH + '</td>';
+                            tbody += '</tr>';
+                        }
+                        $("#MatchesPlayList").find('tbody').html(tbody);
+                        $("#MatchesPlayList").show();
+                    }
+                    else {
+                        $("#MatchesPlayList").find('tbody').html('');
+                        $("#MatchesPlayList").hide();
+                    }
+                }
+                else {
+                    $("#MatchesPlayList").find('tbody').html('');
+                    $("#MatchesPlayList").hide();
                 }
             },
             error: function (xhr, ajaxOptions, thrownError) {
@@ -249,16 +313,12 @@
             }
         })
     })
+</script>
 
-    //清除賽事列表
-    $('#btnMatchesClear').on('click', function () {
-        $("#MatchesList").find('tbody').html('');
-        $("#MatchesList").hide();
-    })*@
-
+<script id="frontend">
     //執行重播(Custom)
     $('#btnCustomMatches').on('click', function () {
-          $(".loading-mask").show();
+        $(".loading-mask").show();
         var data = {
             customTime: $('#CustomMatchesTime').val(),
             matchIdList: $('#CustomInputMatchesID').val()
@@ -305,7 +365,7 @@
 
     //執行重播(random)
     $('#btnRandomMatches').on('click', function () {
-          $(".loading-mask").show();
+        $(".loading-mask").show();
         var data = {
             randomTime: $('#RandomMatchesTime').val(),
             randomCnt: $('#RandomMatchesCnt').val()
@@ -350,55 +410,6 @@
         })
     })
 
-     //刷新
-    $('#btnRefreshPlayList').on('click', function () {
-        $(".loading-mask").show();
-        getEList();
-    })
 
-
-    function getEList()
-    {
-        var data = {}
-         var ajaxRequest = $.ajax({
-            type: "POST",
-            url: "@Url.Action("RefreshExecuteList", new { controller = "Home"})",
-            dataType: "json",
-            data: data,
-            success: function (data) {
-                if (data.Success) {
-                    var cnt = data.ResultData.length;
-                    if (cnt > 0) {
-                        var tbody = '';
-                        for (var i = 0; i < cnt; i++) {
-                            tbody += '<tr>';
-                            tbody += '<td>' + data.ResultData[i].MatchID + '</td>';
-                            tbody += '<td>' + data.ResultData[i].TournamentZH + '</td>';
-                            tbody += '<td>' + data.ResultData[i].Team1ZH + '</td>';
-                            tbody += '<td>' + data.ResultData[i].Team2ZH + '</td>';
-                            //tbody += '<td><div>' + '<button type="button" class="btn btn-danger">關閉</button>' + '</div></td>';
-                            tbody += '</tr>';
-                        }
-                        $("#MatchesPlayList").find('tbody').html(tbody);
-                        $("#MatchesPlayList").show();
-                    }
-                    else {
-                        $("#MatchesPlayList").find('tbody').html('');
-                        $("#MatchesPlayList").show();
-                    }
-                }
-                else {
-                    $("#MatchesPlayList").find('tbody').html('');
-                    $("#MatchesPlayList").show();
-                }
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-
-            },
-            complete: function () {
-                $(".loading-mask").hide();
-            }
-        })
-    }
 
 </script>

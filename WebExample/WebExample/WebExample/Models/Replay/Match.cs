@@ -351,10 +351,10 @@ namespace WebExample.Models.Replay
                     CacheTool.MatchRemove(MatchId);
                     return;
                 }
+                var message = $"賽事編號:{MatchId},第{index + 1}次賠率資料傳送";
+                SendRisk.DoOddsBatch(message,JsonConvert.SerializeObject(RiskOddsDataList[index]));
 
-                SendRisk.DoOddsBatch(JsonConvert.SerializeObject(RiskOddsDataList[index]));
-
-                Log.Info($"賽事編號:{MatchId},第{index + 1}次賠率資料傳送,{JsonConvert.SerializeObject(RiskOddsDataList[index])}");
+                Log.Info(message + $", Data => {JsonConvert.SerializeObject(RiskOddsDataList[index])}");
 
                 int timer = 0;
                 if (index <= RiskOddsDataList.Count - 1)

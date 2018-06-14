@@ -101,7 +101,7 @@ namespace WebExample.Controllers
                         if (!CacheTool.ThreadExist(matchid) && CacheTool.MatchList.Count < 5)
                         {
                             Log.Info($"即將重播 {matchid} 場的賽事走地與賠率資料");
-                            new Match(matchid, customTime).RiskmanStart();
+                            new Match(matchid, customTime).BetRadarStart();
                         }
                     }
                 });
@@ -117,7 +117,64 @@ namespace WebExample.Controllers
             return Content(JsonConvert.SerializeObject(jsonResp));
 
         }
+        public ActionResult RiskCustomRun(string matchIdList)
+        {
+            ResponesJson jsonResp = new ResponesJson();
+            try
+            {
+                var matches = InitMatchList();
 
+                //指定賽事資料
+                string[] matchArray = matchIdList.Split(',');
+                List<long> checklist = new List<long>();
+                foreach (var id in matchArray)
+                {
+                    checklist.Add(long.Parse(id));
+                }
+
+                //checklist.Add(13854605);
+                //checklist.Add(13649001);
+
+                List<long> mlist = new List<long>();
+
+
+
+                foreach (var matchid in checklist)
+                {
+                    if (matches.Contains(matchid))
+                        mlist.Add(matchid);
+                }
+
+                if (mlist.Count == 0)
+                {
+                    Log.Info($"無賽事走地與賠率資料");
+                    jsonResp.Success = false;
+                    jsonResp.ResultData = "無賽事走地與賠率資料";
+                    return Content(JsonConvert.SerializeObject(jsonResp));
+                }
+                Nami.Delay(1).Seconds().Do(() =>
+                {
+                    foreach (var matchid in mlist)
+                    {
+                        if (!CacheTool.ThreadExist(matchid) && CacheTool.MatchList.Count < 5)
+                        {
+                            Log.Info($"即將重播 {matchid} 場的賽事走地與賠率資料");
+                            new Match(matchid, 90).RiskmanStart();
+                        }
+                    }
+                });
+
+                jsonResp.Success = true;
+                jsonResp.ResultData = RefreshList();
+            }
+            catch (Exception ex)
+            {
+                jsonResp.ResultData = ex.Message;
+                jsonResp.Success = false;
+            }
+            return Content(JsonConvert.SerializeObject(jsonResp));
+
+        }
         public ActionResult RefreshExecuteList()
         {
             ResponesJson jsonResp = new ResponesJson();
@@ -171,7 +228,7 @@ namespace WebExample.Controllers
                         if (!CacheTool.ThreadExist(matchid) && CacheTool.MatchList.Count < 5)
                         {
                             Log.Info($"即將重播 {matchid} 場的賽事走地與賠率資料");
-                            new Match(matchid, randomTime).RiskmanStart();
+                            new Match(matchid, randomTime).BetRadarStart();
                         }
                     }
                 });
