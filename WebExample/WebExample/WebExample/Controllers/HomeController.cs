@@ -101,7 +101,7 @@ namespace WebExample.Controllers
                         if (!CacheTool.ThreadExist(matchid) && CacheTool.MatchList.Count < 5)
                         {
                             Log.Info($"即將重播 {matchid} 場的賽事走地與賠率資料");
-                            new Match(matchid, customTime).BetRadarStart();
+                            new MatchV1(matchid, customTime).BetRadarStart();
                         }
                     }
                 });
@@ -159,7 +159,7 @@ namespace WebExample.Controllers
                         if (!CacheTool.ThreadExist(matchid) && CacheTool.MatchList.Count < 5)
                         {
                             Log.Info($"即將重播 {matchid} 場的賽事走地與賠率資料");
-                            new Match(matchid, 90).RiskmanStart();
+                            new MatchR1(matchid, 90).RiskmanStart();
                         }
                     }
                 });
@@ -203,7 +203,6 @@ namespace WebExample.Controllers
                 });
             }
         }
-
 
         public ActionResult RadomRun(int randomTime, int randomCnt)
         {

@@ -185,6 +185,8 @@
     <Compile Include="Models\Entity\ScoutStruct.cs" />
     <Compile Include="Models\Entity\TransJson.cs" />
     <Compile Include="Models\Replay\Match.cs" />
+    <Compile Include="Models\Replay\MatchR1.cs" />
+    <Compile Include="Models\Replay\MatchV1.cs" />
     <Compile Include="Models\Replay\ReplayMatch.cs" />
     <Compile Include="Models\Resp\ResponesJson.cs" />
     <Compile Include="Models\ThreadModel\ThreadWork.cs" />
