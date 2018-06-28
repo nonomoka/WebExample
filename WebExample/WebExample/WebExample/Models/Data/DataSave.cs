@@ -271,7 +271,7 @@ namespace WebExample.Models.Data
             var t = Brook.Load(DbName.DevMainDb).Table(
                 160,
                 CommandType.Text,
-                "SELECT [MatchID] FROM [MainDB].[dbo].[TB_Odds] WITH(NOLOCK) WHERE MsgNr < 10000 GROUP BY [MatchID] order by [MatchID];",
+                "SELECT [MatchID] FROM [MainDB].[dbo].[TB_Odds] WITH(NOLOCK) WHERE MsgNr < 10000000 GROUP BY [MatchID] order by [MatchID];",
                 new DbParameter[] { });
             var list = new List<long>();
             foreach (DataRow row in t.Rows)
@@ -320,7 +320,7 @@ namespace WebExample.Models.Data
                     FROM [MainDB].[dbo].[TB_Odds] (nolock) a
                     left join [MainDB].[dbo].[TB_OddsTypes] (nolock) b 
                     on a.OddsID = b.OddsID " +
-                    "WHERE [MatchId] = @MatchId AND MsgNr < 10000 order by [MsgNr],CreateTime asc;",
+                    "WHERE [MatchId] = @MatchId AND MsgNr < 10000000 order by [MsgNr],CreateTime asc;",
                 new DbParameter[]
                 {
                     new SqlParameter("@MatchId", SqlDbType.BigInt)
